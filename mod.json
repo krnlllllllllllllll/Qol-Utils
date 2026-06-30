@@ -24,6 +24,25 @@
     "unsupported-features": true
   },
 
-  "settings": {},
-  "enable-if": []
+  "unrecommended-mods": [
+    "auto-decorator-utils",
+    "legacy-autodec",
+    "old-style-decorator",
+    "unsafe-decorator-pack"
+  ],
+
+  "settings": {
+    "showDebugInfo": {
+      "type": "bool",
+      "default": false,
+      "description": "Show extra debug info for QOL Utils."
+    }
+  },
+
+  "enable-if": [
+    {
+      "type": "geode-version-at-least",
+      "version": "5.7.1"
+    }
+  ]
 }
