@@ -1,6 +1,7 @@
 {
   "geode": "5.7.1",
   "version": "1.0.0",
+  "gd": {
   "id": "qol.utils",
   "name": "QOL Utils",
   "developer": "krnlllllllllllllll",
