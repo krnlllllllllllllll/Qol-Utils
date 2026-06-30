@@ -12,7 +12,7 @@
   "developer": "krnlllllllllllllll",
   "description": "Quality-of-life utilities for Geometry Dash.",
   "repository": "https://github.com/krnlllllllllllllll/Qol-Utils",
-  "entry": "main.cpp",
+  "entry": "src/main.cpp",
 
   "dependencies": [
     {
