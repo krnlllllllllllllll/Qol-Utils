@@ -1,0 +1,16 @@
+{
+  "gd": {
+    "id": "qol.utils",
+    "version": "1.0.0"
+  },
+  "geode": {
+    "version": "5.7.1"
+  },
+  "entry": "main.cpp",
+  "dependencies": [
+    {
+      "id": "node.ids",
+      "version": "*"
+    }
+  ]
+}
