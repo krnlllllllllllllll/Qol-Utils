@@ -145,15 +145,12 @@ runs:
         fi
 
         export CLI_PROFILE="${{ github.action_path }}/cli-profile"
-        # for windows
         mkdir -p "$CLI_PROFILE/geode/mods"
-        # for mac
         mkdir -p "$CLI_PROFILE/Contents/geode/mods"
         geode profile add --name GithubActions "$CLI_PROFILE"
 
         geode sdk install "${{ github.action_path }}/geode-sdk-clone"
         
-        # silly github actions wont refresh the env
         export GEODE_SDK="${{ github.action_path }}/geode-sdk-clone"
         echo "GEODE_SDK=$GEODE_SDK" >> $GITHUB_ENV
 
@@ -167,7 +164,6 @@ runs:
 
         export CPM_CACHE="${{ github.action_path }}/cpm-cache"
         echo "CPM_SOURCE_CACHE=$CPM_CACHE" >> $GITHUB_ENV
-
 
     - name: Run CMake and build
       id: build
