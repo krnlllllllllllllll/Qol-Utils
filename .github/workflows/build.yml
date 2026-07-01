@@ -1,4 +1,4 @@
-name: Build Geode Mod
+name: Build Geode Mod lol
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
           build-config: Release
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: geode-build-${{ matrix.target }}
           path: ${{ steps.build.outputs.output }}/*.geode
