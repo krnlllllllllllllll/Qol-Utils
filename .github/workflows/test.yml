@@ -34,7 +34,7 @@ jobs:
         with:
           sdk: nightly
           build-config: RelWithDebInfo
-          path: DevTools
+          path: Qol-Utils
           combine: true
           target: ${{ matrix.config.target }}
       
@@ -47,7 +47,7 @@ jobs:
       - uses: geode-sdk/build-geode-mod/combine@main
         id: build
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: Build Output
           path: ${{ steps.build.outputs.build-output }}
