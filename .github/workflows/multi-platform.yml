@@ -1,97 +1,97 @@
-name: Build & Release Geode Mod
+name: Build Geode Mod
+
+permissions:
+  contents: write
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - "**"
-  schedule:
-    - cron: "0 3 * * *" # Nightly build at 03:00 UTC
+      - '**'
 
 jobs:
+
   build:
+    continue-on-error: true # continue even if build failed for some platform
     strategy:
+    
       fail-fast: false
       matrix:
         config:
-          - name: Windows
-            os: windows-latest
-            flags: "/DPLATFORM_WINDOWS"
-          - name: macOS
-            os: macos-latest
-            flags: "-DPLATFORM_MACOS"
-          - name: Android32
-            os: ubuntu-latest
-            target: Android32
-            flags: "-DPLATFORM_ANDROID32"
-          - name: Android64
-            os: ubuntu-latest
-            target: Android64
-            flags: "-DPLATFORM_ANDROID64"
+        - name: Windows
+          os: windows-latest
+          
+        - name: macOS
+          os: macos-latest
 
+        - name: iOS
+          os: macos-latest
+          target: iOS
+
+        - name: Android64
+          os: ubuntu-latest
+          target: Android64
+
+        - name: Android32
+          os: ubuntu-latest
+          target: Android32
+          
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
-
-    env:
-      GEODE_VERSION: "5.7.1"
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Cache build
-        uses: actions/cache@v4
-        with:
-          path: |
-            build
-            .cache
-          key: ${{ runner.os }}-geode-${{ matrix.config.name }}-${{ hashFiles('CMakeLists.txt', 'mod.json') }}
-          restore-keys: |
-            ${{ runner.os }}-geode-${{ matrix.config.name }}-
-
-      - name: Auto-increment mod version
-        run: |
-          python .github/scripts/bump_version.py mod.json
-        shell: bash
-
-      - name: CI validation (editor features)
-        run: |
-          python .github/scripts/validate_editor_features.py
-        shell: bash
-
-      - name: Build Geode mod
+      - uses: actions/checkout@v3
+      
+      - name: Build the mod
         uses: geode-sdk/build-geode-mod@main
         with:
           target: ${{ matrix.config.target }}
-          geode-version: ${{ env.GEODE_VERSION }}
-          cmake-flags: ${{ matrix.config.flags }}
-
-      - name: Upload artifacts
+          sdk: 'nightly'
+          combine: true
+          
+  upload:
+    name: Combine and upload builds
+    runs-on: ubuntu-latest
+    needs: ['build']
+    steps:
+          
+      - name: "Combine builds"
+        uses: geode-sdk/build-geode-mod/combine@main
+        id: build
+        
+      - name: "Upload artifact"
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.config.name }}-mod
-          path: |
-            build/*.geode
-            build/*.zip
+          name: Build Output
+          path: ${{ steps.build.outputs.build-output }}
+          
+      - name: "Set up Git repository"
+        uses: actions/checkout@v2
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - name: "Development Release"
+        uses: ncipollo/release-action@v1
         with:
-          path: dist
+          name: "Development Release"
+          body: |
+           Release of success build for latest commit on `${{ github.head_ref || github.ref_name }}`.
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+           The build workflow run for this release goes in [#${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          tag: "nightly"
+          prerelease: true
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          artifacts: "${{steps.build.outputs.build-output}}/*"
+        
+      - name: "Get mod properties"
+        id: json_properties
+        uses: ActionsTools/read-json-action@main
         with:
-          files: dist/**/*
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          file_path: "mod.json"
+        
+      - name: "Try Release Version"
+        uses: ncipollo/release-action@v1
+        with:
+          generateReleaseNotes: true
+          tag: "${{steps.json_properties.outputs.version}}"
+          artifacts: "${{steps.build.outputs.build-output}}/*"
+          artifactErrorsFailBuild: true
+          allowUpdates: false
