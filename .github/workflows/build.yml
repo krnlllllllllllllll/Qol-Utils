@@ -1,0 +1,39 @@
+name: Build Geode Mod
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            target: Win32
+          - os: macos-latest
+            target: MacOS
+          - os: ubuntu-latest
+            target: Android32
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Geode mod
+        uses: ./.github/workflows/action.yml
+        with:
+          sdk: latest
+          cli: latest
+          target: ${{ matrix.target }}
+          build-config: Release
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: geode-build-${{ matrix.target }}
+          path: ${{ steps.build.outputs.output }}/*.geode
